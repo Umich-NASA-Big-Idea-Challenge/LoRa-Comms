@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+//~7 bytes (message size + ~2 bytes of overhead)
+
+message LoRaMessage {
+  uint32 type = 1;        // Message type 0-127 1 byte
+  uint32 message_id = 2;   // unique message id 2 bits for node (0-3) 6 bits for (0-63) 1 byte
+  uint32 encrypted_path = 3; // List of nodes that relayed the message max num 3 (0 1 2 or 3) 2 bits each should be 1 byte
+
+  sint32 goal_dm_speed = 10; // Goal Linear Speed in deci meters range of -128 to 127 before size expands 1 byte
+  sint32 degrees_per_sec = 11; // -128 t0 127 before size expands 1 byte
+}
