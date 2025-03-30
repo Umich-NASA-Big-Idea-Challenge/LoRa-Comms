@@ -17,7 +17,7 @@
 // Pause between transmited packets in seconds.
 // Set to zero to only transmit a packet when pressing the user button
 // Will not exceed 1% duty cycle, even if you set a lower value.
-#define PAUSE               1
+#define PAUSE               0
 
 // Frequency in MHz. Keep the decimal point to designate float.
 // Check your own rules and regulations to see what is legal where you are.
@@ -38,6 +38,8 @@
 // transmissting without an antenna can damage your hardware.
 #define TRANSMIT_POWER      0
 
+#define GPIO_TOGGLE_PIN  GPIO_NUM_46
+
 String rxdata;
 volatile bool rxFlag = false;
 long counter = 0;
@@ -45,12 +47,16 @@ uint64_t last_tx = 0;
 uint64_t tx_time;
 uint64_t minimum_pause;
 
+void rx();
+
 void setup() {
   heltec_setup();
   both.println("\n\nRadio init");
   RADIOLIB_OR_HALT(radio.begin());
   // Set the callback function for received packets
   radio.setDio1Action(rx);
+
+  pinMode(GPIO_TOGGLE_PIN, OUTPUT);  // Set GPIO 0 as an output
   
   // Set radio parameters
   delay(500);
@@ -66,6 +72,8 @@ void setup() {
   both.printf("TX power: %i dBm\n", TRANSMIT_POWER);
   RADIOLIB_OR_HALT(radio.setOutputPower(TRANSMIT_POWER));
   delay(500);
+
+  both.printf("\n\nRelay");
 
   
   // Start receiving
@@ -112,6 +120,12 @@ void loop() {
       both.printf("  RSSI: %.2f dBm\n", radio.getRSSI());
       both.printf("  SNR: %.2f dB\n", radio.getSNR());
     }
+
+    //toglle relay
+    if(digitalRead(GPIO_TOGGLE_PIN)==LOW) digitalWrite(GPIO_TOGGLE_PIN, HIGH);
+    else digitalWrite(GPIO_TOGGLE_PIN, LOW);
+    both.printf("PIN: %d \n", digitalRead(GPIO_TOGGLE_PIN));
+
     RADIOLIB_OR_HALT(radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_INF));
   }
 }
